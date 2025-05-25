@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Панель администратора | Комплексная автоматизация</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: "#1a237e", secondary: "#4051b5" },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+      :where([class^="ri-"])::before {
+        content: "\f3c2";
+      }
+      @media (max-width: 1024px) {
+        .notification-dot {
+          width: 6px;
+          height: 6px;
+        }
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: #f5f5f5;
+      }
+      .sidebar-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      .sidebar-item.active {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-left: 4px solid white;
+      }
+      input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .custom-checkbox {
+        position: relative;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #cbd5e1;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      input[type="checkbox"]:checked + .custom-checkbox {
+        background-color: #1a237e;
+        border-color: #1a237e;
+      }
+      input[type="checkbox"]:checked + .custom-checkbox:after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 5px;
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 22px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 2px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .toggle-slider {
+        background-color: #1a237e;
+      }
+      input:checked + .toggle-slider:before {
+        transform: translateX(20px);
+      }
+      .notification-dot {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 8px;
+        height: 8px;
+        background-color: #ef4444;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+          <a href="index.html" class="flex items-center space-x-2">
+            <div
+              class="w-10 h-10 bg-primary rounded-full flex items-center justify-center"
+            >
+              <span class="text-white font-['Pacifico'] text-xl">IL</span>
+            </div>
+            <span class="font-['Pacifico'] text-2xl text-primary"
+              >InnoSysLab</span
+            >
+          </a>
+          <nav class="hidden md:flex space-x-8">
+            <a
+              href="index.html"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Главная</a
+            >
+            <a
+              href="catalog.html"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Услуги</a
+            >
+            <a
+              href="#"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >О компании</a
+            >
+            <a
+              href="#"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Проекты</a
+            >
+            <a
+              href="#"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Контакты</a
+            >
+          </nav>
+          <div class="flex items-center space-x-6">
+            <div class="relative">
+              <button
+                id="userMenuButton"
+                class="text-gray-700 hover:text-primary transition-colors"
+              >
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="ri-user-3-line text-xl"></i>
+                </div>
+              </button>
+              <div
+                id="userMenu"
+                class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50"
+              >
+                <a
+                  href="account.html"
+                  class="block px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >Личный кабинет</a
+                >
+                <div id="adminMenuItem" class="hidden">
+                  <a
+                    href="admin.html"
+                    class="block px-4 py-2 text-gray-700 hover:bg-gray-50"
+                    >Панель администратора</a
+                  >
+                </div>
+                <button
+                  id="loginButton"
+                  class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50"
+                >
+                  Войти
+                </button>
+                <button
+                  id="logoutButton"
+                  class="hidden block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50"
+                >
+                  Выйти
+                </button>
+              </div>
+            </div>
+            <div class="relative hidden md:block">
+              <input
+                type="text"
+                placeholder="Поиск..."
+                class="pl-10 pr-4 py-2 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-primary"
+              />
+              <div
+                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+              >
+                <i class="ri-search-line"></i>
+              </div>
+            </div>
+            <a
+              href="cart.html"
+              class="relative p-2 text-gray-700 hover:text-primary transition-colors"
+            >
+              <div class="w-6 h-6 flex items-center justify-center">
+                <i class="ri-shopping-cart-2-line text-xl"></i>
+              </div>
+              <span
+                id="cart-count"
+                class="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >0</span
+              >
+            </a>
+            <button class="md:hidden p-2 text-gray-700" id="mobile-menu-button">
+              <div class="w-6 h-6 flex items-center justify-center">
+                <i class="ri-menu-line text-xl"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden py-4 border-t mt-3">
+          <div class="flex flex-col space-y-3">
+            <a
+              href="index.html"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Главная</a
+            >
+            <a
+              href="catalog.html"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Услуги</a
+            >
+            <a
+              href="#"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >О компании</a
+            >
+            <a
+              href="#"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Проекты</a
+            >
+            <a
+              href="#"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Контакты</a
+            >
+            <a
+              href="account.html"
+              class="text-gray-800 font-medium hover:text-primary transition-colors"
+              >Личный кабинет</a
+            >
+            <div id="mobileAdminMenuItem" class="hidden">
+              <a
+                href="admin.html"
+                class="text-gray-800 font-medium hover:text-primary transition-colors"
+                >Панель администратора</a
+              >
+            </div>
+          </div>
+          <div class="mt-4 relative">
+            <input
+              type="text"
+              placeholder="Поиск..."
+              class="w-full pl-10 pr-4 py-2 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-primary"
+            />
+            <div
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+            >
+              <i class="ri-search-line"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex h-screen overflow-hidden relative">
+      <!-- Mobile menu button -->
+      <button
+        id="mobileSidebarToggle"
+        class="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center"
+      >
+        <i class="ri-menu-line"></i>
+      </button>
+      <!-- Боковая навигация -->
+      <aside
+        id="sidebar"
+        class="fixed lg:static w-[280px] -translate-x-full lg:translate-x-0 bg-primary text-white flex flex-col h-full z-40 transition-transform duration-300"
+      >
+        <!-- Логотип -->
+        <div class="p-4 flex items-center justify-center">
+          <span class="text-2xl font-['Pacifico'] text-white">InnoSysLab</span>
+        </div>
+        <!-- Профиль администратора -->
+        <div class="p-4 flex items-center border-b border-white/10 mb-4">
+          <div
+            class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3"
+          >
+            <i class="ri-user-line text-white"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium">Валерия Петрова</p>
+            <p class="text-xs opacity-70">Главный администратор</p>
+          </div>
+        </div>
+        <!-- Навигационное меню -->
+        <nav class="flex-1 overflow-y-auto">
+          <ul class="px-2">
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item active flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-dashboard-line"></i>
+                </div>
+                <span>Дашборд</span>
+              </a>
+            </li>
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-settings-line"></i>
+                </div>
+                <span>Проекты автоматизации</span>
+              </a>
+            </li>
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-user-3-line"></i>
+                </div>
+                <span>Клиенты</span>
+              </a>
+            </li>
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-team-line"></i>
+                </div>
+                <span>Сотрудники</span>
+              </a>
+            </li>
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-task-line"></i>
+                </div>
+                <span>Задачи</span>
+              </a>
+            </li>
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-file-chart-line"></i>
+                </div>
+                <span>Отчеты</span>
+              </a>
+            </li>
+            <li class="mb-1">
+              <a
+                href="#"
+                class="sidebar-item flex items-center px-4 py-3 rounded-md text-white"
+              >
+                <div class="w-6 h-6 flex items-center justify-center mr-3">
+                  <i class="ri-settings-3-line"></i>
+                </div>
+                <span>Настройки</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <!-- Нижняя часть сайдбара -->
+        <div class="p-4 border-t border-white/10">
+          <a
+            href="index.html"
+            class="flex items-center justify-center w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-button text-white whitespace-nowrap"
+          >
+            <div class="w-5 h-5 flex items-center justify-center mr-2">
+              <i class="ri-logout-box-line"></i>
+            </div>
+            <span>Выйти</span>
+          </a>
+        </div>
+      </aside>
+      <!-- Основной контент -->
+      <div class="flex-1 flex flex-col overflow-hidden lg:pl-0 w-full">
+        <!-- Верхняя панель -->
+        <header class="bg-white shadow-sm z-10">
+          <div class="flex items-center justify-between px-4 lg:px-6 py-3">
+            <div class="flex items-center w-full lg:w-1/3 ml-12 lg:ml-0">
+              <div class="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Поиск..."
+                  class="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:border-primary"
+                />
+                <div
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+                >
+                  <i class="ri-search-line"></i>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4">
+              <div class="relative">
+                <button
+                  class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"
+                >
+                  <i class="ri-notification-3-line text-gray-600"></i>
+                  <span class="notification-dot"></span>
+                </button>
+              </div>
+              <div class="relative">
+                <button
+                  class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"
+                >
+                  <i class="ri-message-3-line text-gray-600"></i>
+                  <span class="notification-dot"></span>
+                </button>
+              </div>
+              <button
+                class="flex items-center px-4 py-2 bg-primary text-white rounded-button whitespace-nowrap"
+              >
+                <div class="w-5 h-5 flex items-center justify-center mr-2">
+                  <i class="ri-add-line"></i>
+                </div>
+                <span>Новый проект</span>
+              </button>
+            </div>
+          </div>
+        </header>
+        <!-- Основная область контента -->
+        <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+          <div class="mb-6">
+            <h1 class="text-2xl font-semibold text-gray-800">Дашборд</h1>
+            <p class="text-gray-600">
+              Обзор ключевых показателей и текущих проектов
+            </p>
+          </div>
+          <!-- Информационные карточки -->
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8"
+          >
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-500 text-sm font-medium">
+                  Активные проекты
+                </h3>
+                <div
+                  class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center"
+                >
+                  <i class="ri-folder-line text-blue-500"></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <span class="text-3xl font-bold text-gray-800">24</span>
+                <span class="ml-2 text-sm text-green-500 flex items-center">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  12%
+                </span>
+              </div>
+              <p class="text-gray-500 text-sm mt-2">
+                По сравнению с прошлым месяцем
+              </p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-500 text-sm font-medium">
+                  Завершенные проекты
+                </h3>
+                <div
+                  class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center"
+                >
+                  <i class="ri-check-double-line text-green-500"></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <span class="text-3xl font-bold text-gray-800">18</span>
+                <span class="ml-2 text-sm text-green-500 flex items-center">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  8%
+                </span>
+              </div>
+              <p class="text-gray-500 text-sm mt-2">
+                По сравнению с прошлым месяцем
+              </p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-500 text-sm font-medium">Клиенты</h3>
+                <div
+                  class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center"
+                >
+                  <i class="ri-user-3-line text-purple-500"></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <span class="text-3xl font-bold text-gray-800">42</span>
+                <span class="ml-2 text-sm text-green-500 flex items-center">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  5%
+                </span>
+              </div>
+              <p class="text-gray-500 text-sm mt-2">
+                По сравнению с прошлым месяцем
+              </p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-500 text-sm font-medium">Доход</h3>
+                <div
+                  class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center"
+                >
+                  <i class="ri-money-ruble-circle-line text-amber-500"></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <span class="text-3xl font-bold text-gray-800">4.8 млн ₽</span>
+                <span class="ml-2 text-sm text-red-500 flex items-center">
+                  <i class="ri-arrow-down-line mr-1"></i>
+                  3%
+                </span>
+              </div>
+              <p class="text-gray-500 text-sm mt-2">
+                По сравнению с прошлым месяцем
+              </p>
+            </div>
+          </div>
+          <!-- Графики и таблицы -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-8">
+            <!-- График выполнения проектов -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-gray-800 font-medium">Выполнение проектов</h3>
+                <div class="flex items-center">
+                  <button class="text-gray-500 hover:text-gray-700 p-1">
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-more-2-fill"></i>
+                    </div>
+                  </button>
+                </div>
+              </div>
+              <div id="projectChart" class="w-full h-64"></div>
+            </div>
+            <!-- Диаграмма распределения задач -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-gray-800 font-medium">Распределение задач</h3>
+                <div class="flex items-center">
+                  <button class="text-gray-500 hover:text-gray-700 p-1">
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-more-2-fill"></i>
+                    </div>
+                  </button>
+                </div>
+              </div>
+              <div id="taskChart" class="w-full h-64"></div>
+            </div>
+          </div>
+          <!-- Таблица последних проектов -->
+          <div class="bg-white rounded-lg shadow-sm mb-8">
+            <div class="flex items-center justify-between p-6 border-b">
+              <h3 class="text-gray-800 font-medium">Последние проекты</h3>
+              <button
+                class="text-primary hover:underline text-sm font-medium whitespace-nowrap"
+              >
+                Посмотреть все
+              </button>
+            </div>
+            <div class="overflow-x-auto -mx-6 px-6">
+              <table class="w-full min-w-[800px]">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Название проекта
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Клиент
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Статус
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Прогресс
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Срок
+                    </th>
+                    <th
+                      class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Действия
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center mr-3"
+                        >
+                          <i class="ri-building-line text-blue-500"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            Автоматизация производственной линии
+                          </div>
+                          <div class="text-xs text-gray-500">
+                            ID: PRJ-2025-089
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">ООО "ТехноСклад"</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                        >В процессе</span
+                      >
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          class="bg-primary h-2.5 rounded-full"
+                          style="width: 75%"
+                        ></div>
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1">75%</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                    >
+                      30 июня 2025
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                    >
+                      <button class="text-primary hover:text-primary-dark">
+                        Подробнее
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="w-8 h-8 rounded-md bg-purple-100 flex items-center justify-center mr-3"
+                        >
+                          <i class="ri-database-2-line text-purple-500"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            RPA решения
+                          </div>
+                          <div class="text-xs text-gray-500">
+                            ID: PRJ-2025-076
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">ЗАО "ИнвестГрупп"</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800"
+                        >Ожидание</span
+                      >
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          class="bg-primary h-2.5 rounded-full"
+                          style="width: 30%"
+                        ></div>
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1">30%</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                    >
+                      15 июля 2025
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                    >
+                      <button class="text-primary hover:text-primary-dark">
+                        Подробнее
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="w-8 h-8 rounded-md bg-green-100 flex items-center justify-center mr-3"
+                        >
+                          <i class="ri-robot-line text-green-500"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            Промышленный IoT мониторинг
+                          </div>
+                          <div class="text-xs text-gray-500">
+                            ID: PRJ-2025-054
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">АО "ПромТех"</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800"
+                        >Планирование</span
+                      >
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          class="bg-primary h-2.5 rounded-full"
+                          style="width: 15%"
+                        ></div>
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1">15%</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                    >
+                      10 августа 2025
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                    >
+                      <button class="text-primary hover:text-primary-dark">
+                        Подробнее
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div
+                          class="w-8 h-8 rounded-md bg-amber-100 flex items-center justify-center mr-3"
+                        >
+                          <i class="ri-cloud-line text-amber-500"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            Автоматизация документооборота
+                          </div>
+                          <div class="text-xs text-gray-500">
+                            ID: PRJ-2025-042
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">
+                        ООО "МедиаХолдинг"
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"
+                        >Критический</span
+                      >
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          class="bg-primary h-2.5 rounded-full"
+                          style="width: 60%"
+                        ></div>
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1">60%</div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                    >
+                      5 июня 2025
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                    >
+                      <button class="text-primary hover:text-primary-dark">
+                        Подробнее
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Список важных уведомлений -->
+          <div class="bg-white rounded-lg shadow-sm">
+            <div class="flex items-center justify-between p-6 border-b">
+              <h3 class="text-gray-800 font-medium">Важные уведомления</h3>
+              <button
+                class="text-primary hover:underline text-sm font-medium whitespace-nowrap"
+              >
+                Отметить все как прочитанные
+              </button>
+            </div>
+            <div class="divide-y divide-gray-200">
+              <div class="p-6 flex items-start">
+                <div
+                  class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0"
+                >
+                  <i class="ri-alarm-warning-line text-red-500"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900">
+                    Срок выполнения проекта "Система "Умное здание" истекает
+                    через 2 дня
+                  </h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Необходимо ускорить выполнение последних задач или запросить
+                    продление сроков у клиента.
+                  </p>
+                  <div class="mt-2 flex space-x-3">
+                    <button
+                      class="text-xs text-primary font-medium whitespace-nowrap"
+                    >
+                      Просмотреть проект
+                    </button>
+                    <button
+                      class="text-xs text-gray-500 font-medium whitespace-nowrap"
+                    >
+                      Отложить
+                    </button>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-400 ml-4 flex-shrink-0">
+                  2 часа назад
+                </div>
+              </div>
+              <div class="p-6 flex items-start">
+                <div
+                  class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4 flex-shrink-0"
+                >
+                  <i class="ri-user-add-line text-green-500"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900">
+                    Новый клиент "ООО Стройкомплекс" зарегистрирован в системе
+                  </h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Необходимо назначить менеджера и провести первичную
+                    консультацию по автоматизации бизнес-процессов.
+                  </p>
+                  <div class="mt-2 flex space-x-3">
+                    <button
+                      class="text-xs text-primary font-medium whitespace-nowrap"
+                    >
+                      Назначить менеджера
+                    </button>
+                    <button
+                      class="text-xs text-gray-500 font-medium whitespace-nowrap"
+                    >
+                      Отложить
+                    </button>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-400 ml-4 flex-shrink-0">
+                  Вчера
+                </div>
+              </div>
+              <div class="p-6 flex items-start">
+                <div
+                  class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4 flex-shrink-0"
+                >
+                  <i class="ri-file-text-line text-blue-500"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900">
+                    Обновлены требования к проекту "Автоматизация складского
+                    учета"
+                  </h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Клиент добавил новые требования к функциональности системы.
+                    Необходимо пересмотреть план работ и бюджет.
+                  </p>
+                  <div class="mt-2 flex space-x-3">
+                    <button
+                      class="text-xs text-primary font-medium whitespace-nowrap"
+                    >
+                      Просмотреть изменения
+                    </button>
+                    <button
+                      class="text-xs text-gray-500 font-medium whitespace-nowrap"
+                    >
+                      Отложить
+                    </button>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-400 ml-4 flex-shrink-0">
+                  23 мая 2025
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <!-- Скрипты -->
+    <script id="mobileMenuHandler">
+      document.addEventListener("DOMContentLoaded", function () {
+        const sidebar = document.getElementById("sidebar");
+        const mobileSidebarToggle = document.getElementById(
+          "mobileSidebarToggle"
+        );
+        const mainContent = document.querySelector("main");
+        function toggleSidebar() {
+          sidebar.classList.toggle("-translate-x-full");
+          mobileSidebarToggle
+            .querySelector("i")
+            .classList.toggle("ri-menu-line");
+          mobileSidebarToggle
+            .querySelector("i")
+            .classList.toggle("ri-close-line");
+        }
+        mobileSidebarToggle.addEventListener("click", toggleSidebar);
+        // Close sidebar when clicking outside on mobile
+        mainContent.addEventListener("click", function () {
+          if (
+            window.innerWidth < 1024 &&
+            !sidebar.classList.contains("-translate-x-full")
+          ) {
+            toggleSidebar();
+          }
+        });
+        // Handle window resize
+        window.addEventListener("resize", function () {
+          if (window.innerWidth >= 1024) {
+            sidebar.classList.remove("-translate-x-full");
+          } else {
+            sidebar.classList.add("-translate-x-full");
+          }
+        });
+      });
+    </script>
+    <script id="chartInitialization">
+      document.addEventListener("DOMContentLoaded", function () {
+        // График выполнения проектов
+        const projectChart = echarts.init(
+          document.getElementById("projectChart")
+        );
+        const projectOption = {
+          animation: false,
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderColor: "#f1f1f1",
+            textStyle: {
+              color: "#1f2937",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            top: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            boundaryGap: false,
+            data: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн"],
+            axisLine: {
+              lineStyle: {
+                color: "#e5e7eb",
+              },
+            },
+            axisLabel: {
+              color: "#1f2937",
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLine: {
+              show: false,
+            },
+            axisLabel: {
+              color: "#1f2937",
+            },
+            splitLine: {
+              lineStyle: {
+                color: "#f3f4f6",
+              },
+            },
+          },
+          series: [
+            {
+              name: "Завершенные проекты",
+              type: "line",
+              stack: "Total",
+              smooth: true,
+              lineStyle: {
+                width: 3,
+                color: "rgba(87, 181, 231, 1)",
+              },
+              areaStyle: {
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: "rgba(87, 181, 231, 0.2)",
+                    },
+                    {
+                      offset: 1,
+                      color: "rgba(87, 181, 231, 0.01)",
+                    },
+                  ],
+                },
+              },
+              emphasis: {
+                focus: "series",
+              },
+              data: [5, 8, 10, 12, 15, 18],
+            },
+            {
+              name: "Новые проекты",
+              type: "line",
+              stack: "Total",
+              smooth: true,
+              lineStyle: {
+                width: 3,
+                color: "rgba(141, 211, 199, 1)",
+              },
+              areaStyle: {
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: "rgba(141, 211, 199, 0.2)",
+                    },
+                    {
+                      offset: 1,
+                      color: "rgba(141, 211, 199, 0.01)",
+                    },
+                  ],
+                },
+              },
+              emphasis: {
+                focus: "series",
+              },
+              data: [8, 10, 12, 15, 20, 24],
+            },
+          ],
+        };
+        projectChart.setOption(projectOption);
+        // Диаграмма распределения задач
+        const taskChart = echarts.init(document.getElementById("taskChart"));
+        const taskOption = {
+          animation: false,
+          tooltip: {
+            trigger: "item",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderColor: "#f1f1f1",
+            textStyle: {
+              color: "#1f2937",
+            },
+          },
+          legend: {
+            orient: "horizontal",
+            bottom: 0,
+            textStyle: {
+              color: "#1f2937",
+            },
+          },
+          series: [
+            {
+              name: "Распределение задач",
+              type: "pie",
+              radius: ["40%", "70%"],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 8,
+                borderColor: "#fff",
+                borderWidth: 2,
+              },
+              label: {
+                show: false,
+                position: "center",
+              },
+              emphasis: {
+                label: {
+                  show: true,
+                  fontSize: "14",
+                  fontWeight: "bold",
+                  color: "#1f2937",
+                },
+              },
+              labelLine: {
+                show: false,
+              },
+              data: [
+                {
+                  value: 35,
+                  name: "Разработка",
+                  itemStyle: { color: "rgba(87, 181, 231, 1)" },
+                },
+                {
+                  value: 25,
+                  name: "Тестирование",
+                  itemStyle: { color: "rgba(141, 211, 199, 1)" },
+                },
+                {
+                  value: 20,
+                  name: "Внедрение",
+                  itemStyle: { color: "rgba(251, 191, 114, 1)" },
+                },
+                {
+                  value: 15,
+                  name: "Документация",
+                  itemStyle: { color: "rgba(252, 141, 98, 1)" },
+                },
+                { value: 5, name: "Обучение", itemStyle: { color: "#a3a3a3" } },
+              ],
+            },
+          ],
+        };
+        taskChart.setOption(taskOption);
+        // Обработка изменения размера окна
+        window.addEventListener("resize", function () {
+          projectChart.resize();
+          taskChart.resize();
+        });
+      });
+    </script>
+  </body>
+</html>
